@@ -1,0 +1,132 @@
+1. Exploratory Analysis
+
+```{r}
+trees<- read.csv('~/Desktop/Quant-Methods/treedata.csv')
+trees
+```
+
+#if else (is.na(matrix),0,martix)
+
+
+```{R}
+tapply(trees$elev, trees$species, mean)
+aggregate(trees,list(trees$species),mean)
+```
+
+
+
+```{r}
+abiefra <- trees[trees$spcode=="ABIEFRA",]
+acer<- trees[trees$spcode=="ACERRUB",]
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+```{r}
+boxplot(cover~plotsize, xlab="Acer Plotsize", ylab="Acer Cover", data=acer)
+boxplot(cover~plotsize, xlab="Abiefra Plotsize", ylab="Abiefra Cover",data=abiefra)
+plot(cover~elev, xlab="Acer Elevation", ylab="Acer Cover",data=acer)
+plot(cover~elev, xlab="Abiefra Elevation", ylab="Abiefra Cover",data=abiefra)
+boxplot(cover~disturb, xlab="Acer Distibution", ylab="Acer Cover",data=acer)
+boxplot(cover~disturb, xlab="Abiefra Distibution", ylab="Abiefra Cover",data=abiefra)
+plot(cover~streamdist, xlab="Acer Stream Distribution", ylab="Acer Cover",data=acer)
+plot(cover~streamdist, xlab="Abiefra Stream Distribution", ylab="Abiefra Cover", data=abiefra)
+plot(cover~tci, xlab="Acer TCI", ylab="Acer Cover",data=acer)
+plot(cover~tci, xlab="Abiefra TCI", ylab="Abiefra Cover",data=abiefra)
+plot(cover~beers, xlab="Acer Beers", ylab="Acer Cover",data=acer)
+plot(cover~beers, xlab="Abiefra Beers", ylab="Abiefra Cover",data=abiefra)
+```
+```{r}
+aov1<-aov(cover~elev+plotsize+disturb+streamdist+tci+beers, data=acer)
+summary(aov1)
+plot(aov1)
+```
+
+```{r}
+aov2<-aov(cover~elev+log(plotsize)+disturb+streamdist, data=abiefra)
+summary(aov2)
+plot(aov2)
+```
+
+```{r}
+lmabiefra<-lm(cover~elev+plotsize+disturb+streamdist, data=abiefra)
+summary(lmabiefra)
+```
+
+```{r}
+lmacer<-lm(cover~elev+plotsize+disturb+streamdist, data=acer)
+summary(lmacer)
+```
+
+```{r}
+glmabiefra<-glm(cover~elev+plotsize+disturb+streamdist, data=abiefra)
+summary(glmabiefra)
+```
+
+```{r}
+glmacer2<-glm(cover~elev+plotsize+disturb+streamdist, data=acer,family="poisson")
+summary(glmacer2)
+```
+
+```{r}
+glmabiefra2<-glm(cover~elev+plotsize+disturb+streamdist, data=abiefra, family="poisson")
+summary(glmabiefra2)
+```
+
+```{r}
+pseudo_r2 = function(glm_mod) {
+                1 -  glm_mod$deviance / glm_mod$null.deviance
+}
+```
+
+```{r}
+pseudo_r2(glmabiefra2)
+```
+
+```{r}
+pseudo_r2(glmacer2)
+```
+
+
+```{r}
+library(ggplot2)
+ggplot(data = acer, mapping = aes(x = cover, y = elev)) + 
+  geom_point(mapping = aes(color = disturb)) +
+  geom_smooth(mapping = aes(linetype = disturb, color = disturb), method = 'loess') +
+  scale_color_manual(values = c("red", "blue", "green", "purple")) +
+  theme_classic()
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
