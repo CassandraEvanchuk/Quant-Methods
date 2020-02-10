@@ -1,0 +1,168 @@
+```{r}
+library(vegan)
+data(dune)
+data(dune.env)
+?dune
+```
+
+```{r}
+head(dune)
+```
+```{r}
+contrasts(dune.env$Moisture)
+```
+```{r}
+dune.env$Moisture=factor(dune.env$Moisture,levels=1:5,ordered=FALSE)
+dune.env$Moisture
+contrasts(dune.env$Moisture)
+```
+
+
+```{r}
+dune_mds = metaMDS(dune)
+```
+
+
+
+
+```{r}
+plot(dune_mds, type='n')
+ text(dune_mds, 'sp', cex=.5)
+ # generate vector of colors 
+ color_vect = rev(terrain.colors(6))[-1]
+ points(dune_mds, 'sites', pch=19, 
+        col=color_vect[dune.env$Moisture])
+ legend('topright', paste("Moisture =", 1:5, sep=''), 
+        col=color_vect, pch=19)
+```
+
+It looks like their may be patterns within the moistures. Moisture seems to be increasing from left to right. It also looks like the different levels of moisture are clustered together. The purpose of creating a graphic like this is to see if there is a relationship between relationship between moisture and species. 
+
+
+
+```{R}
+cca_dune = cca(dune ~ . , data=dune.env)
+RsquareAdj(cca_dune, 100)
+```
+
+```{r}
+anova(cca_dune, permutations = 999)
+```
+
+```{r}
+anova(cca_dune, by='margin', permutations = 999)
+```
+
+```{r}
+plot(cca_dune, type='n', scaling=1)
+orditorp(cca_dune, display='sp', cex=0.5, scaling=1, col='blue')
+text(cca_dune, display='bp', col='red')
+```
+```{r}
+cca_dune_Moisture = cca(formula=dune ~ Moisture , data=dune.env)
+RsquareAdj(cca_dune_Moisture, 100)
+```
+
+```{r}
+anova(cca_dune_Moisture, permutations = 999)
+```
+
+```{r}
+anova(cca_dune_Moisture, by='margin', permutations = 999)
+```
+
+```{r}
+plot(cca_dune_Moisture, type='n', scaling=1)
+orditorp(cca_dune_Moisture, display='sp', cex=0.5, scaling=1, col='blue')
+text(cca_dune_Moisture, display='bp', col='red')
+```
+
+```{r}
+cca_dune_Use = cca(formula=dune ~ Use , data=dune.env)
+RsquareAdj(cca_dune_Use, 100)
+```
+
+```{r}
+anova(cca_dune_Use, permutations = 999)
+```
+
+```{r}
+anova(cca_dune_Use, by='margin', permutations = 999)
+```
+
+```{r}
+plot(cca_dune_Use, type='n', scaling=1)
+orditorp(cca_dune_Use, display='sp', cex=0.5, scaling=1, col='blue')
+text(cca_dune_Use, display='bp', col='red')
+```
+
+
+
+
+
+
+
+
+
+
+```{r}
+cca_dune_manage = cca(formula=dune ~ Management , data=dune.env)
+RsquareAdj(cca_dune_manage, 100)
+```
+
+```{r}
+anova(cca_dune_manage, permutations = 999)
+```
+
+```{r}
+anova(cca_dune_manage, by='margin', permutations = 999)
+```
+
+```{r}
+plot(cca_dune_manage, type='n', scaling=1)
+orditorp(cca_dune_manage, display='sp', cex=0.5, scaling=1, col='blue')
+text(cca_dune_manage, display='bp', col='red')
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+```{r}
+cca_dune_manure = cca(formula=dune ~ Manure , data=dune.env)
+RsquareAdj(cca_dune_manure, 100)
+```
+
+```{r}
+anova(cca_dune_manure, permutations = 999)
+```
+
+```{r}
+anova(cca_dune_manure, by='margin', permutations = 999)
+```
+
+```{r}
+plot(cca_dune_manure, type='n', scaling=1)
+orditorp(cca_dune_manure, display='sp', cex=0.5, scaling=1, col='blue')
+text(cca_dune_manure, display='bp', col='red')
+```
+
+The model with everything seems to be similar to the first one. The models that only include one variable do not agree. Individual models came out significant (except use), while the model with all variables, none of the varaibles were significant. I think that the RDA is more useful because you can look at individual variables more easily. 
+
+
+
+
+
+
+
+
+
