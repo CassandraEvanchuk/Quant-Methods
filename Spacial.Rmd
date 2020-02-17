@@ -1,0 +1,261 @@
+```{r}
+library(vegan)
+data(BCI)
+## UTM Coordinates (in metres)
+BCI_xy = data.frame(x = rep(seq(625754, 626654, by=100), each=5), 
+                    y = rep(seq(1011569,  1011969, by=100), len=50))
+```
+
+^^Spacial coordianates of the quadrat
+```{R}
+BCI
+```
+
+```{r}
+BCI_common<- BCI$Faramea.occidentalis
+BCI_rare<- BCI$Eugenia.nesiotica
+```
+
+```{r}
+hist(BCI_common)
+hist(BCI_rare)
+```
+
+```{r}
+col_brks = hist(BCI_common, plot=F)$breaks
+col_indices = as.numeric(cut(BCI_common, col_brks))
+cols = rev(terrain.colors(length(col_brks)))
+plot(BCI_xy, cex=2, pch=19, col=cols[col_indices])
+```
+```{r}
+col_brks = hist(BCI_rare, plot=F)$breaks
+col_indices = as.numeric(cut(BCI_rare, col_brks))
+cols = rev(terrain.colors(length(col_brks)))
+plot(BCI_xy, cex=2, pch=19, col=cols[col_indices])
+```
+
+
+
+
+
+```{r}
+BCI_SR= apply(BCI, 1, function(x) sum(x > 0))
+hist(BCI_SR)
+```
+
+
+```{r}
+common_dist = dist(BCI_common)
+xy_dist = dist(BCI_xy)
+max_dist = max(xy_dist) / 2
+plot(xy_dist, common_dist)
+abline(lm(common_dist ~ xy_dist), lwd=3, col='red')
+lines(lowess(xy_dist, sr_dist), lwd=3, col='pink')
+abline(v = max_dist, col='red', lwd=3, lty=2)
+```
+
+```{r}
+rare_dist = dist(BCI_rare)
+xy_dist = dist(BCI_xy)
+max_dist = max(xy_dist) / 2
+plot(xy_dist, rare_dist)
+abline(lm(rare_dist ~ xy_dist), lwd=3, col='red')
+lines(lowess(xy_dist, sr_dist), lwd=3, col='pink')
+abline(v = max_dist, col='red', lwd=3, lty=2)
+```
+
+```{R}
+obs_cor = cor(xy_dist, common_dist)
+obs_cor
+```
+
+```{R}
+obs_cor = cor(xy_dist, rare_dist)
+obs_cor
+```
+
+```{r}
+nperm = 1000
+null_cor = obs_cor
+for (i in 2:nperm) {
+    # shuffle the rows of the spatial coordinates
+    tmp_xy = BCI_xy[sample(nrow(BCI_xy)), ]
+    # correlation between the shuffled spatial coordinates and sr_dist
+    null_cor[i] = cor(dist(tmp_xy), common_dist)
+}
+# compute the p-value
+sum(null_cor >= obs_cor) / nperm 
+```
+
+```{r}
+nperm = 1000
+null_cor = obs_cor
+for (i in 2:nperm) {
+    # shuffle the rows of the spatial coordinates
+    tmp_xy = BCI_xy[sample(nrow(BCI_xy)), ]
+    # correlation between the shuffled spatial coordinates and sr_dist
+    null_cor[i] = cor(dist(tmp_xy), rare_dist)
+}
+# compute the p-value
+sum(null_cor >= obs_cor) / nperm 
+```
+
+```{r}
+common_mantel = mantel(xy_dist, common_dist)
+common_mantel
+```
+
+```{r}
+rare_mantel = mantel(xy_dist, rare_dist)
+rare_mantel
+```
+```{r}
+boxplot(list(null_cor, common_mantel$perm), horizontal = T, boxwex = 0.5,
+        names = c('mine', 'theirs'), xlab='Correlation')
+abline(v=obs_cor, col='red')
+```
+
+```{r}
+boxplot(list(null_cor, rare_mantel$perm), horizontal = T, boxwex = 0.5,
+        names = c('mine', 'theirs'), xlab='Correlation')
+abline(v=obs_cor, col='red')
+```
+
+```{r}
+comm_dist = vegdist(BCI)
+plot(xy_dist, comm_dist)
+abline(lm(comm_dist ~ xy_dist), lwd=3, col='red')
+lines(lowess(xy_dist, comm_dist), lwd=3, col='pink')
+lines(lowess(xy_dist, comm_dist, f=0.1), lwd=3, col='blue')
+
+abline(v = max_dist, col='red', lwd=3, lty=2)
+```
+
+
+Both the rare and the common species are not spacially dependent. The permutation test for both the rare and common species had p values greater than 0.05. The mantel test also showed no significant relationship between species (both common and rare) and spacial dependancy. 
+
+
+
+
+
+
+
+
+
+
+```{r}
+sp_ids = c("Cordia.lasiocalyx", "Hirtella.triandra",
+           "Picramnia.latifolia", "Quassia.amara",
+           "Tabernaemontana.arborea", "Trattinnickia.aspera", 
+           "Xylopia.macrantha")
+```
+
+```{r}
+sp_a<- BCI$Cordia.lasiocalyx
+sp_b<- BCI$Hirtella.triandra
+sp_c<- BCI$Picramnia.latifolia
+sp_d<- BCI$Quassia.amara
+sp_e<- BCI$Tabernaemontana.arborea
+sp_f<- BCI$Trattinnickia.aspera
+sp_g<- BCI$Xylopia.macrantha
+sp_one<- BCI$Drypetes.standleyi
+```
+
+```{r}
+sp_a
+```
+
+```{r}
+sp_c
+```
+
+```{r}
+comm_mantel = mantel(xy_dist, comm_dist)
+comm_mantel
+```
+
+```{r}
+common_dist22 = dist(sp_a)
+rare_dist22 = dist(sp_c)
+```
+
+```{r}
+sr_corlog = mantel.correlog(common_dist22, xy_dist)
+comm_corlog = mantel.correlog(common_dist22, xy_dist)
+sr_corlog
+comm_corlog
+```
+
+```{r}
+sr_corlog_rare = mantel.correlog(rare_dist22, xy_dist)
+comm_corlog_rare = mantel.correlog(rare_dist22, xy_dist)
+sr_corlog_rare
+comm_corlog_rare
+```
+
+```{r}
+par(mfrow=c(1,2))
+plot(sr_corlog)
+mtext(side=3, 'Species Richness')
+abline(v = max_dist, col='red', lwd=3, lty=2)
+plot(comm_corlog)
+mtext(side=3, 'Community Composition')
+abline(v = max_dist, col='red', lwd=3, lty=2)
+```
+
+
+```{r}
+par(mfrow=c(1,2))
+plot(sr_corlog_rare)
+mtext(side=3, 'Species Richness')
+abline(v = max_dist, col='red', lwd=3, lty=2)
+plot(comm_corlog_rare)
+mtext(side=3, 'Community Composition')
+abline(v = max_dist, col='red', lwd=3, lty=2)
+```
+
+```{r}
+x <- BCI_xy$x
+y <- BCI_xy$y
+
+two_dat = data.frame(BCI, BCI_xy)
+two_lm = gls(sp_a ~ sp_c, data=BCI)
+plot(Variogram(two_lm, form= ~ x + y))
+```
+
+```{r}
+res = residuals(two_lm)
+plot(dist(two_dat[, c('x', 'y')]), dist(res))
+lines(lowess(dist(two_dat[, c('x', 'y')]), dist(res)), col='red', lwd=2)
+abline(v = max_dist, col='red', lwd=3, lty=2)
+```
+
+```{r}
+two_exp111 = update(two_lm, corr=corExp(form=~x + y))
+plot(Variogram(two_exp111, maxDist = max_dist))
+```
+
+
+
+```{R}
+two_rat_nug = update(two_lm, corr=corRatio(form=~x + y, nugget=T))
+plot(Variogram(two_rat_nug, maxDist = max_dist))
+```
+
+```{r}
+plot(Variogram(two_rat_nug, resType='n', maxDist = max_dist))
+```
+
+```{r}
+all<-anova(two_lm, two_exp111, two_rat_nug, test=F)
+all
+```
+
+
+
+
+Including the spatial error does not have a big impact on the model. Adding in the spatial error did not significantly impact the AIC value AKA improve the model. 
+
+Adding in the spatial error may not have made a large impact because spatial dependancy was not signficant before either. Therefore, this could be why adding in spatial error may not have made a large impact on the model. 
+
+
